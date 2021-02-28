@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
 using RESTcarsDatabase.Managers;
 using RESTcarsDatabase.Models;
+using System.Collections.Generic;
 using static Microsoft.AspNetCore.Http.StatusCodes;
 
 namespace RESTcarsDatabase.Controllers
@@ -14,8 +14,8 @@ namespace RESTcarsDatabase.Controllers
 
         public CarsController(CarContext context)
         {
-            //_manager = new CarsManagerEF(context);
-            _manager = new CarsManagerSqlClient();
+            _manager = new CarsManagerEF(context);
+            //_manager = new CarsManagerSqlClient();
         }
 
         // GET: api/<CarsController>
@@ -40,11 +40,20 @@ namespace RESTcarsDatabase.Controllers
         // POST api/<CarsController>
         [HttpPost]
         [ProducesResponseType(Status201Created)]
+        [ProducesResponseType(Status400BadRequest)]
         public ActionResult<Car> Post([FromBody] Car newCar)
         {
-            Car car = _manager.Add(newCar);
-            string uri = Url.RouteUrl(RouteData.Values) + "/" + car.Id;
-            return Created(uri, car);
+            try
+            {
+                Car car = _manager.Add(newCar);
+                string uri = Url.RouteUrl(RouteData.Values) + "/" + car.Id;
+                return Created(uri, car);
+            }
+            catch (CarException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
         }
 
         // PUT api/<CarsController>/5

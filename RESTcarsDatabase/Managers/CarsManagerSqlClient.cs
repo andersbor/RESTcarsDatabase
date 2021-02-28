@@ -1,7 +1,7 @@
-﻿using System;
+﻿using RESTcarsDatabase.Models;
+using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
-using RESTcarsDatabase.Models;
 
 namespace RESTcarsDatabase.Managers
 {
@@ -32,18 +32,28 @@ namespace RESTcarsDatabase.Managers
         private Car ReadCar(SqlDataReader reader)
         {
             int id = reader.GetInt32(0);
-            string make = reader.GetString(1);
-            string model = reader.GetString(2);
-            //string publisher = reader.IsDBNull(3) ? null : reader.GetString(3);
-            //decimal price = reader.GetDecimal(4);
+            string make = GuardedGet<string>(reader, 1);
+            string model = GuardedGet<string>(reader, 2);
+            int? price = GuardedGet<int?>(reader, 3);
+            /*int? price;
+            if (reader.IsDBNull(3)) { price = null; }
+            else { price = reader.GetInt32(3); }*/
             Car car = new Car
             {
                 Id = id,
                 Make = make,
                 Model = model,
+                Price = price
             };
             return car;
         }
+
+        private static T GuardedGet<T>(SqlDataReader reader, int column)
+        {
+            if (reader.IsDBNull(column)) return default(T);
+            return reader.GetFieldValue<T>(column);
+        }
+
 
         public Car GetById(int id)
         {
@@ -69,19 +79,29 @@ namespace RESTcarsDatabase.Managers
 
         public Car Add(Car car)
         {
-            string insertString = "insert into cars (make, model) values (@make, @model);";
-            using (SqlConnection conn = new SqlConnection(Secrets.ConnectionString))
+            try
             {
-                conn.Open();
-                using (SqlCommand command = new SqlCommand(insertString, conn))
+                string insertString = "insert into cars (make, model, price) values (@make, @model, @price);";
+                using (SqlConnection conn = new SqlConnection(Secrets.ConnectionString))
                 {
-                    command.Parameters.AddWithValue("@make", car.Make);
-                    command.Parameters.AddWithValue("@model", car.Model);
-                    int rowsAffected = command.ExecuteNonQuery();
-                    //return rowsAffected; 
-                    int id = GetLatestId(conn, "cars");
-                    return GetById(id);
+                    conn.Open();
+                    using (SqlCommand command = new SqlCommand(insertString, conn))
+                    {
+                        GuardedAssign(command, "@make", car.Make);
+                        GuardedAssign(command, "@model", car.Model);
+                        GuardedAssign(command, "@price", car.Price);
+                        //command.Parameters.AddWithValue("@price", car.Price);
+                        int rowsAffected = command.ExecuteNonQuery();
+                        //return rowsAffected; 
+                        int id = GetLatestId(conn, "cars");
+                        return GetById(id);
+                    }
                 }
+            }
+            catch (SqlException ex)
+            {
+                // Exception translation
+                throw new CarException(ex.Message);
             }
         }
 
@@ -120,20 +140,34 @@ namespace RESTcarsDatabase.Managers
         public Car Update(int id, Car updates)
         {
             const string updateString =
-                "update cars set make=@make, model=@model where id=@id;";
+                "update cars set make=@make, model=@model, price=@price where id=@id;";
             using (SqlConnection databaseConnection = new SqlConnection(Secrets.ConnectionString))
             {
                 databaseConnection.Open();
                 using (SqlCommand updateCommand = new SqlCommand(updateString, databaseConnection))
                 {
                     updateCommand.Parameters.AddWithValue("@id", id);
-                    updateCommand.Parameters.AddWithValue("@make", updates.Make);
-                    updateCommand.Parameters.AddWithValue("@model", updates.Model);
+                    GuardedAssign(updateCommand, "@make", updates.Make);
+                    GuardedAssign(updateCommand, "@model", updates.Model);
+                    GuardedAssign(updateCommand, "@price", updates.Price);
                     int rowsAffected = updateCommand.ExecuteNonQuery();
                     if (rowsAffected == 0) return null;
                     updates.Id = id;
                     return updates;
                 }
+            }
+        }
+
+        // DBNull is not the same as C# null ...
+        private static void GuardedAssign<T>(SqlCommand command, string parameterName, T value)
+        {
+            if (value == null)
+            {
+                command.Parameters.AddWithValue(parameterName, DBNull.Value);
+            }
+            else
+            {
+                command.Parameters.AddWithValue(parameterName, value);
             }
         }
     }

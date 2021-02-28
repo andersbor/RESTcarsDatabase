@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using RESTcarsDatabase.Models;
+﻿using RESTcarsDatabase.Models;
+using System.Collections.Generic;
 
 namespace RESTcarsDatabase.Managers
 {

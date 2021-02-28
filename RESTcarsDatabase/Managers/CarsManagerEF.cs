@@ -1,10 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using RESTcarsDatabase.Models;
+using System.Collections.Generic;
 
 namespace RESTcarsDatabase.Managers
 {
-    public class CarsManagerEF: ICarsManager
+    public class CarsManagerEF : ICarsManager
     {
         private readonly CarContext _context;
 
@@ -25,11 +26,18 @@ namespace RESTcarsDatabase.Managers
 
         public Car Add(Car car)
         {
-            _context.Cars.Add(car);
-            _context.SaveChanges(); // don't forget to save
-            // int newId = car.Id;
-            // car.Id us updated by the database: id int identity(1,1)
-            return car;
+            try
+            {
+                _context.Cars.Add(car);
+                _context.SaveChanges(); // don't forget to save
+                // int newId = car.Id;
+                // car.Id us updated by the database: id int identity(1,1)
+                return car;
+            }
+            catch (DbUpdateException ex)
+            {
+                throw new CarException(ex.InnerException.Message);
+            }
         }
 
         public Car Update(int id, Car updates)
