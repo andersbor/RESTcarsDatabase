@@ -9,6 +9,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using RESTcarsDatabase.Managers;
 
 namespace RESTcarsDatabase
 {
@@ -25,6 +27,9 @@ namespace RESTcarsDatabase
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
+
+            services.AddDbContext<CarContext>(opt =>
+                opt.UseSqlServer(Secrets.ConnectionString));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

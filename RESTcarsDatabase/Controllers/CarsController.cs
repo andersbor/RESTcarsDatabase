@@ -1,11 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using RESTcarsDatabase.Managers;
-
-// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+using RESTcarsDatabase.Models;
+using static Microsoft.AspNetCore.Http.StatusCodes;
 
 namespace RESTcarsDatabase.Controllers
 {
@@ -15,41 +12,61 @@ namespace RESTcarsDatabase.Controllers
     {
         private readonly ICarsManager _manager;
 
-        public CarsController()
+        public CarsController(CarContext context)
         {
-            _manager = new CarsManagerEF();
+            _manager = new CarsManagerEF(context);
+            //_manager = new CarsManagerSqlClient();
         }
 
         // GET: api/<CarsController>
         [HttpGet]
-        public IEnumerable<string> Get()
+        [ProducesResponseType(Status200OK)]
+        public IEnumerable<Car> Get()
         {
-            return new string[] { "value1", "value2" };
+            return _manager.GetAll();
         }
 
         // GET api/<CarsController>/5
         [HttpGet("{id}")]
-        public string Get(int id)
+        [ProducesResponseType(Status200OK)]
+        [ProducesResponseType(Status404NotFound)]
+        public ActionResult<Car> Get(int id)
         {
-            return "value";
+            Car car = _manager.GetById(id);
+            if (car == null) return NotFound("No car with id: " + id);
+            return Ok(car);
         }
 
         // POST api/<CarsController>
         [HttpPost]
-        public void Post([FromBody] string value)
+        [ProducesResponseType(Status201Created)]
+        public ActionResult<Car> Post([FromBody] Car newCar)
         {
+            Car car = _manager.Add(newCar);
+            string uri = Url.RouteUrl(RouteData.Values) + "/" + car.Id;
+            return Created(uri, car);
         }
 
         // PUT api/<CarsController>/5
         [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
+        [ProducesResponseType(Status200OK)]
+        [ProducesResponseType(Status404NotFound)]
+        public ActionResult<Car> Put(int id, [FromBody] Car updates)
         {
+            Car car = _manager.Update(id, updates);
+            if (car == null) return NotFound("No car with id: " + id);
+            return Ok(car);
         }
 
         // DELETE api/<CarsController>/5
         [HttpDelete("{id}")]
-        public void Delete(int id)
+        [ProducesResponseType(Status200OK)]
+        [ProducesResponseType(Status404NotFound)]
+        public ActionResult<Car> Delete(int id)
         {
+            Car car = _manager.Delete(id);
+            if (car == null) return NotFound("No car with id: " + id);
+            return Ok(car);
         }
     }
 }
