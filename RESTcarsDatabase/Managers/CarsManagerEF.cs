@@ -30,12 +30,12 @@ namespace RESTcarsDatabase.Managers
             {
                 _context.Cars.Add(car);
                 _context.SaveChanges(); // don't forget to save
-                // int newId = car.Id;
                 // car.Id us updated by the database: id int identity(1,1)
                 return car;
             }
             catch (DbUpdateException ex)
             {
+                // exception translation
                 throw new CarException(ex.InnerException.Message);
             }
         }
