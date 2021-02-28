@@ -14,8 +14,8 @@ namespace RESTcarsDatabase.Controllers
 
         public CarsController(CarContext context)
         {
-            _manager = new CarsManagerEF(context);
-            //_manager = new CarsManagerSqlClient();
+            //_manager = new CarsManagerEF(context);
+            _manager = new CarsManagerSqlClient();
         }
 
         // GET: api/<CarsController>
