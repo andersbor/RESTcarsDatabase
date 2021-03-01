@@ -60,11 +60,19 @@ namespace RESTcarsDatabase.Controllers
         [HttpPut("{id}")]
         [ProducesResponseType(Status200OK)]
         [ProducesResponseType(Status404NotFound)]
+        [ProducesResponseType(Status400BadRequest)]
         public ActionResult<Car> Put(int id, [FromBody] Car updates)
         {
-            Car car = _manager.Update(id, updates);
-            if (car == null) return NotFound("No car with id: " + id);
-            return Ok(car);
+            try
+            {
+                Car car = _manager.Update(id, updates);
+                if (car == null) return NotFound("No car with id: " + id);
+                return Ok(car);
+            }
+            catch (CarException ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         // DELETE api/<CarsController>/5

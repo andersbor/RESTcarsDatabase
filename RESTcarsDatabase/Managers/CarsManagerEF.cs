@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.ChangeTracking;
 using RESTcarsDatabase.Models;
 using System.Collections.Generic;
 
@@ -35,6 +34,7 @@ namespace RESTcarsDatabase.Managers
             }
             catch (DbUpdateException ex)
             {
+                _context.Cars.Remove(car);
                 // exception translation
                 throw new CarException(ex.InnerException.Message);
             }
@@ -42,11 +42,21 @@ namespace RESTcarsDatabase.Managers
 
         public Car Update(int id, Car updates)
         {
-            updates.Id = id;
-            // uses the id from the "updates" object
-            EntityEntry<Car> res = _context.Cars.Update(updates);
-            _context.SaveChanges();
-            return res.Entity;
+            try
+            {
+                Car car = _context.Cars.Find(id);
+                if (car == null) return null;
+                car.Make = updates.Make;
+                car.Model = updates.Model;
+                car.Price = updates.Price;
+                _context.Entry(car).State = EntityState.Modified;
+                _context.SaveChanges();
+                return car;
+            }
+            catch (DbUpdateException ex)
+            {
+                throw new CarException(updates.Make + " " + updates.Model + " " + updates.Price + "\n" +ex.InnerException.Message);
+            }
         }
 
         public Car Delete(int id)

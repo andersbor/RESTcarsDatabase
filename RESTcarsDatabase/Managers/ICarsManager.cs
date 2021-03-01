@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace RESTcarsDatabase.Managers
 {
-    interface ICarsManager
+    public interface ICarsManager
     {
         IEnumerable<Car> GetAll();
         Car GetById(int id);

@@ -35,9 +35,6 @@ namespace RESTcarsDatabase.Managers
             string make = GuardedGet<string>(reader, 1);
             string model = GuardedGet<string>(reader, 2);
             int? price = GuardedGet<int?>(reader, 3);
-            /*int? price;
-            if (reader.IsDBNull(3)) { price = null; }
-            else { price = reader.GetInt32(3); }*/
             Car car = new Car
             {
                 Id = id,
@@ -139,22 +136,30 @@ namespace RESTcarsDatabase.Managers
 
         public Car Update(int id, Car updates)
         {
-            const string updateString =
-                "update cars set make=@make, model=@model, price=@price where id=@id;";
-            using (SqlConnection databaseConnection = new SqlConnection(Secrets.ConnectionString))
+            try
             {
-                databaseConnection.Open();
-                using (SqlCommand updateCommand = new SqlCommand(updateString, databaseConnection))
+                const string updateString =
+                    "update cars set make=@make, model=@model, price=@price where id=@id;";
+                using (SqlConnection databaseConnection = new SqlConnection(Secrets.ConnectionString))
                 {
-                    updateCommand.Parameters.AddWithValue("@id", id);
-                    GuardedAssign(updateCommand, "@make", updates.Make);
-                    GuardedAssign(updateCommand, "@model", updates.Model);
-                    GuardedAssign(updateCommand, "@price", updates.Price);
-                    int rowsAffected = updateCommand.ExecuteNonQuery();
-                    if (rowsAffected == 0) return null;
-                    updates.Id = id;
-                    return updates;
+                    databaseConnection.Open();
+                    using (SqlCommand updateCommand = new SqlCommand(updateString, databaseConnection))
+                    {
+                        updateCommand.Parameters.AddWithValue("@id", id);
+                        GuardedAssign(updateCommand, "@make", updates.Make);
+                        GuardedAssign(updateCommand, "@model", updates.Model);
+                        GuardedAssign(updateCommand, "@price", updates.Price);
+                        int rowsAffected = updateCommand.ExecuteNonQuery();
+                        if (rowsAffected == 0) return null;
+                        updates.Id = id;
+                        return updates;
+                    }
                 }
+            }
+            catch (SqlException ex)
+            {
+                // Exception translation
+                throw new CarException(ex.Message);
             }
         }
 
