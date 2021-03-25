@@ -21,7 +21,7 @@ namespace RESTcarsDatabase.Controllers
         // GET: api/<CarsController>
         [HttpGet]
         [ProducesResponseType(Status200OK)]
-        public IEnumerable<Car> Get(string make = null, string model = null, int? price_gte = null, int? price_lte = null)
+        public IEnumerable<Car> Get([FromQuery] string make = null, string model = null, int? price_gte = null, int? price_lte = null)
         {
             return _manager.GetAll(make, model, price_gte, price_lte);
         }

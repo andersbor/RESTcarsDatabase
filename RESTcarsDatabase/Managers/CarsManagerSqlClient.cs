@@ -13,6 +13,7 @@ namespace RESTcarsDatabase.Managers
 
         public IEnumerable<Car> GetAll(string make = null, string model = null, int? price_gte = null, int? price_lte = null)
         // TODO query parameters not used
+        // https://github.com/andersbor/RESTmessages/blob/master/RESTmessages/Managers/MessagesManagerDatabase.cs
         {
             string selectString = "select * from cars";
             using (SqlConnection conn = new SqlConnection(ConnectionString))
