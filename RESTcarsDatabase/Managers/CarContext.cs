@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System;
+using Microsoft.EntityFrameworkCore;
 using RESTcarsDatabase.Models;
 
 namespace RESTcarsDatabase.Managers
@@ -7,6 +8,12 @@ namespace RESTcarsDatabase.Managers
     {
         public CarContext(DbContextOptions<CarContext> options) : base(options)
         {
+        }
+
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            base.OnConfiguring(optionsBuilder);
+            optionsBuilder.UseSqlServer(Environment.GetEnvironmentVariable("DB_CONN_STRING"));
         }
 
         public DbSet<Car> Cars { get; set; }

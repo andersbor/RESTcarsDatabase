@@ -15,7 +15,6 @@ namespace RESTcarsDatabase.Managers.Tests
         {
             DbContextOptionsBuilder<CarContext> options = new DbContextOptionsBuilder<CarContext>();
             options.UseSqlServer(Secrets.ConnectionString);
-            //options.EnableSensitiveDataLogging();
             _context = new CarContext(options.Options);
         }
 

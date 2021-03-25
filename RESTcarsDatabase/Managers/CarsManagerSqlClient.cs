@@ -7,10 +7,15 @@ namespace RESTcarsDatabase.Managers
 {
     public class CarsManagerSqlClient : ICarsManager
     {
-        public IEnumerable<Car> GetAll()
+        private static readonly string ConnectionString =
+            //Environment.GetEnvironmentVariable("DB_CONN_STRING");
+            Secrets.ConnectionString;
+
+        public IEnumerable<Car> GetAll(string make = null, string model = null, int? price_gte = null, int? price_lte = null)
+        // TODO query parameters not used
         {
             string selectString = "select * from cars";
-            using (SqlConnection conn = new SqlConnection(Secrets.ConnectionString))
+            using (SqlConnection conn = new SqlConnection(ConnectionString))
             {
                 conn.Open();
                 using (SqlCommand command = new SqlCommand(selectString, conn))

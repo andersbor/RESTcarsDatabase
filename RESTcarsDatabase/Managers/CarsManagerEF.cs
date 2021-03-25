@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using RESTcarsDatabase.Models;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace RESTcarsDatabase.Managers
 {
@@ -13,9 +14,29 @@ namespace RESTcarsDatabase.Managers
             _context = context;
         }
 
-        public IEnumerable<Car> GetAll()
+        public IEnumerable<Car> GetAll(string make = null, string model = null, int? price_gte = null, int? price_lte = null)
+        // https://www.moesif.com/blog/technical/api-design/REST-API-Design-Filtering-Sorting-and-Pagination/
         {
-            return _context.Cars;
+            IQueryable<Car> selectStatement = _context.Cars;
+            // https://www.tutorialspoint.com/what-is-the-difference-between-ienumerable-and-iqueryable-in-chash
+            if (make != null && make.Trim().Length > 0)
+            {
+                selectStatement = selectStatement.Where(car => car.Make.StartsWith(make));
+            }
+            if (model != null && model.Trim().Length > 0)
+            {
+                selectStatement = selectStatement.Where(car => car.Model == model);
+            }
+            if (price_gte != null)
+            {
+                selectStatement = selectStatement.Where(car => car.Price > price_gte);
+            }
+            if (price_lte != null)
+            {
+                selectStatement = selectStatement.Where(car => car.Price < price_lte);
+            }
+
+            return selectStatement;
         }
 
         public Car GetById(int id)
@@ -55,7 +76,7 @@ namespace RESTcarsDatabase.Managers
             }
             catch (DbUpdateException ex)
             {
-                throw new CarException(updates.Make + " " + updates.Model + " " + updates.Price + "\n" +ex.InnerException.Message);
+                throw new CarException(updates.Make + " " + updates.Model + " " + updates.Price + "\n" + ex.InnerException.Message);
             }
         }
 

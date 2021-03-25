@@ -1,3 +1,4 @@
+using System;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -21,9 +22,10 @@ namespace RESTcarsDatabase
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
-
+            string connectionString = Environment.GetEnvironmentVariable("DB_CONN_STRING");
             services.AddDbContext<CarContext>(opt =>
-                opt.UseSqlServer(Secrets.ConnectionString));
+                 opt.UseSqlServer(Secrets.ConnectionString));
+                // opt.UseSqlServer(connectionString));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
